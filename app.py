@@ -2,8 +2,6 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS,cross_origin
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy import stats
 from sklearn.datasets import load_iris,load_diabetes
 from sklearn.ensemble import GradientBoostingClassifier,GradientBoostingRegressor,RandomForestClassifier,RandomForestRegressor
 from sklearn.neighbors import KNeighborsRegressor,KNeighborsClassifier
@@ -68,7 +66,7 @@ def getData():
 		# print(unique_vals)
 		if(len(unique_vals)<12):
 			columns_iscategorical.append(True)
-			X[i].fillna(stats.mode(X[i])[0][0],inplace=True)
+			X[i].fillna(max(set(X[i]), key=X[i].count),inplace=True)
 		else:
 			X[i].fillna(X[i].mean(),inplace=True)
 			columns_iscategorical.append(False)
@@ -177,31 +175,18 @@ def getData():
 
 	### 			Plotting compressed features against the target       ###
 	def the_plot(X,y):
-		plt.figure()
 		colors = ['red','blue','green','cyan','purple','magenta',
 			'brown','black','gray','yellow']
 		classes = ['class {}'.format(i) for i in range(20)]
 		if(problem_type(y)=='classification'):
 			reduced_X = PCA(n_components=2).fit_transform(X)
-			for i in range(len(np.unique(y))):
-				px = reduced_X[:,0][y==i]
-				py = reduced_X[:,1][y==i]
-				plt.scatter(px,py,c=colors[i],label=classes[i])
-			plt.xlabel('First Principal Component')
-			plt.ylabel('Second Principal Component')
-			plt.legend(loc=0)
 			return({
 				'problem_type':'classification',
 				'x':reduced_X[:,0].tolist(),
 				'y':reduced_X[:,1].tolist()
 			})	
-			# plt.show()
 		else:
 			reduced_X = PCA(n_components=1).fit_transform(X)
-			plt.scatter(reduced_X,y)
-			plt.xlabel('Features projected to a 1D space')
-			plt.ylabel(target)
-			# plt.show()
 			return({
 				'problem_type':'regression',
 				'x':reduced_X.ravel().tolist(),
