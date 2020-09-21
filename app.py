@@ -13,14 +13,15 @@ from sklearn.model_selection import train_test_split,GridSearchCV
 import math
 import pickle
 
+# app = Flask(__name__)
 app = Flask(__name__, static_folder='./build', static_url_path='/')
-CORS(app,support_credentials=True) 
+# CORS(app,support_credentials=True) 
 
 best_model = ''
 
-@app.route('/')
-def index():
-	return app.send_static_file('index.html')
+# @app.route('/')
+# def index():
+# 	return app.send_static_file('index.html')
 
 @app.route('/getData', methods = ['GET','POST'])
 @cross_origin(origin='*',supports_credentials=True)
@@ -62,11 +63,13 @@ def getData():
 	###  		Check if categorical and then filling with mode or mean       ###
 	columns_iscategorical = []
 	for i in X.columns:
+		# max(set(X[i]), key=X[i].count)
 		unique_vals = X[i].unique()
 		# print(unique_vals)
 		if(len(unique_vals)<12):
 			columns_iscategorical.append(True)
-			X[i].fillna(max(set(X[i]), key=X[i].count),inplace=True)
+			X[i].fillna(X[i].mode()[0],inplace=True)
+			# print('lel',X[i].mode())
 		else:
 			X[i].fillna(X[i].mean(),inplace=True)
 			columns_iscategorical.append(False)
