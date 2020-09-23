@@ -11,28 +11,49 @@ from sklearn.feature_selection import RFE,SelectKBest,f_regression,f_classif
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split,GridSearchCV
 import math
+from random import randint
 import pickle
 
 # app = Flask(__name__)
 app = Flask(__name__, static_folder='./build', static_url_path='/')
-# CORS(app,support_credentials=True) 
+CORS(app,support_credentials=True) 
 
 best_model = ''
 
-# @app.route('/')
-# def index():
-# 	return app.send_static_file('index.html')
+@app.route('/')
+def index():
+	return app.send_static_file('index.html')
 
 @app.route('/getData', methods = ['GET','POST'])
 @cross_origin(origin='*',supports_credentials=True)
 def getData():
-	file = request.files['file']
-	target = request.form['target']
+	requestJson = request.get_json()
+	showTicks = requestJson['showTicks']
+	formdata = requestJson['formdata']
+	print(showTicks)
+	print(request.form)
+	# print(request.form['showTicks'])
 
-	print(file)
+	df = ''
+	target = ''
+	file = ''
+	if(showTicks['custom']==True):
+		filename = formdata.files['file'].filename.split('.')[0] + ' dataset'
+		df = pd.read_csv(file)
+		target = formdata.form['target']
+	elif(showTicks['heart']==True):
+		filename = 'heart dataset'
+		df = pd.read_csv('heart.csv')
+		target = 'target'
+	elif(showTicks['prostate']==True):
+		filename = 'prostate dataset'
+		df = pd.read_csv('prostate.csv')
+		target = 'lpsa'
+	else:
+		filename = 'Stock Prices dataset'
+		df = pd.read_csv('summaryWithoutDate.csv') 
+		target = 'Stock price'
 
-	path = './prostate.csv'
-	df = pd.read_csv(file)
 	# df = pd.DataFrame({
 	# 	'f1':[np.nan,np.nan,np.nan,45],
 	# 	'f2':[1,63,np.nan,45],
@@ -97,7 +118,7 @@ def getData():
 
 
 	dataDisplay = {
-		'title':file.filename.split('.')[0] + ' dataset',
+		'title':filename,
 		'rows':pd.concat([X,y],axis=1).values.tolist(),
 		'columns':pd.concat([X,y],axis=1).columns.to_list()
 	}
@@ -175,25 +196,32 @@ def getData():
 
 
 
-
+	colors_points = []
 	### 			Plotting compressed features against the target       ###
 	def the_plot(X,y):
-		colors = ['red','blue','green','cyan','purple','magenta',
-			'brown','black','gray','yellow']
-		classes = ['class {}'.format(i) for i in range(20)]
 		if(problem_type(y)=='classification'):
+			colors = []
+			unique_vals_y = y.unique().tolist()
+			n = len(unique_vals_y)
+			for i in range(n):
+				colors.append('#%06X' % randint(0, 0xFFFFFF))
+			for i in range(len(y)):
+				idx = unique_vals_y.index(y[i])
+				colors_points.append(colors[idx])
 			reduced_X = PCA(n_components=2).fit_transform(X)
 			return({
 				'problem_type':'classification',
 				'x':reduced_X[:,0].tolist(),
-				'y':reduced_X[:,1].tolist()
+				'y':reduced_X[:,1].tolist(),
+				'colors_points':colors_points
 			})	
 		else:
 			reduced_X = PCA(n_components=1).fit_transform(X)
 			return({
 				'problem_type':'regression',
 				'x':reduced_X.ravel().tolist(),
-				'y':y.tolist()
+				'y':y.tolist(),
+				'colors_points':colors_points
 			})			
 
 	plot_data = the_plot(X,y)
@@ -280,12 +308,12 @@ def getData():
 	'''
 	Best model 
 	GradientBoostingRegressor(alpha=0.9, criterion='friedman_mse', init=None,
-	             learning_rate=0.1, loss='ls', max_depth=3, max_features=None,
-	             max_leaf_nodes=None, min_impurity_decrease=0.0,
-	             min_impurity_split=None, min_samples_leaf=1,
-	             min_samples_split=4, min_weight_fraction_leaf=0.0,
-	             n_estimators=100, presort='auto', random_state=0,
-	             subsample=1.0, verbose=0, warm_start=False) 
+					 learning_rate=0.1, loss='ls', max_depth=3, max_features=None,
+					 max_leaf_nodes=None, min_impurity_decrease=0.0,
+					 min_impurity_split=None, min_samples_leaf=1,
+					 min_samples_split=4, min_weight_fraction_leaf=0.0,
+					 n_estimators=100, presort='auto', random_state=0,
+					 subsample=1.0, verbose=0, warm_start=False) 
 	r2_score 
 	0.9832532381346817
 	'''
