@@ -13,6 +13,7 @@ from sklearn.model_selection import train_test_split,GridSearchCV
 import math
 from random import randint
 import pickle
+import json
 
 # app = Flask(__name__)
 app = Flask(__name__, static_folder='./build', static_url_path='/')
@@ -27,20 +28,23 @@ def index():
 @app.route('/getData', methods = ['GET','POST'])
 @cross_origin(origin='*',supports_credentials=True)
 def getData():
-	requestJson = request.get_json()
-	showTicks = requestJson['showTicks']
-	formdata = requestJson['formdata']
-	print(showTicks)
-	print(request.form)
-	# print(request.form['showTicks'])
+
+	# print(request.files['file'])
+	# print(request.form['target'])
+	print(request.form['showTicks'])
+	print(json.loads(request.form['showTicks']))
+
+	showTicks = json.loads(request.form['showTicks'])
 
 	df = ''
 	target = ''
 	file = ''
+	# print(formdata)
 	if(showTicks['custom']==True):
-		filename = formdata.files['file'].filename.split('.')[0] + ' dataset'
+		file = request.files['file']
 		df = pd.read_csv(file)
-		target = formdata.form['target']
+		filename = file.filename.split('.')[0] + ' Dataset'
+		target = request.form['target']
 	elif(showTicks['heart']==True):
 		filename = 'heart dataset'
 		df = pd.read_csv('heart.csv')
