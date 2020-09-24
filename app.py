@@ -47,7 +47,7 @@ def getData():
 		target = request.form['target']
 	elif(showTicks['heart']==True):
 		filename = 'heart dataset'
-		df = pd.read_csv('heart.csv')
+		df = pd.read_csv(r'/home/usmanabdurrehman/mysite/Data-Insights.io/heart.csv')
 		target = 'target'
 	elif(showTicks['prostate']==True):
 		filename = 'prostate dataset'
