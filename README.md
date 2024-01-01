@@ -19,15 +19,16 @@ https://usmanabdurrehman.pythonanywhere.com/
 - cd dataInsightsBackend
 - pip install virtualenv
 
-### For Linux
+#### For Linux
 
 - virtualenv myenv
 - source myenv/bin/activate
+- pip install -r requirements
+- python app.py
 
-### For Windows
+#### For Windows
 
 - python -m venv myenv
 - myenv\Scripts\activate
-
 - pip install -r requirements
 - python app.py
